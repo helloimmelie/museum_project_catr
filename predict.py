@@ -85,7 +85,9 @@ end_token = tokenizer.convert_tokens_to_ids(tokenizer._sep_token)
 
 predict_Dataset = CustomDataset(data_path = args.path, transform=coco.val_transform)
 sampler_val = torch.utils.data.SequentialSampler(predict_Dataset)
-predict_dataloader = DataLoader(dataset=predict_Dataset, batch_size=8, sampler = sampler_val, collate_fn = collate_fn, drop_last=False, shuffle=False, num_workers=2)
+predict_dataloader = DataLoader(dataset=predict_Dataset, batch_size=config.batch_size, 
+                                sampler = sampler_val, collate_fn = collate_fn, drop_last=False, 
+                                shuffle=False, num_workers=config.num_workers)
 
 @torch.no_grad()
 def evaluate(model, data_loader, device):
@@ -115,12 +117,13 @@ def evaluate(model, data_loader, device):
                     if predicted_id[0] == 102:
                         return caps
                 
-                    caps[:, i+1] = predicted_id[0]
+                    caps[:, i+1] = predicted_id
                     cap_masks[:, i+1] = False
 
-                result = tokenizer.decode(caps[0].tolist(), skip_special_tokens=True)
-                json_list.append({"file_name":file_name, "caption": result.capitalize()})
-                print(result.capitalize())
+                for i in range(len(caps)-1):
+                    result = tokenizer.decode(caps[i].tolist(), skip_special_tokens=True)
+                    json_list.append({"file_name":file_name[i], "caption": result.capitalize()}) #for문으로 찍어서 하면 될듯 
+                    print(result.capitalize())
             
             json.dump({args.json_file_name:json_list},make_file,ensure_ascii=False,indent="\t")
 
