@@ -19,9 +19,9 @@ class Config(object):
         # Basic
         self.device = 'cuda'
         self.seed = 42
-        self.batch_size = 32
+        self.batch_size = 8
         self.num_workers = 4
-        self.checkpoint = './checkpoint.pth'
+        self.checkpoint = './checkpoint3.pth'
         self.clip_max_norm = 0.1
 
         # Transformer

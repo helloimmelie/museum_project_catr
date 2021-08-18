@@ -21,13 +21,15 @@ def collate_fn(batch): #collate_fn: dataloader에서 batch를 불러올 때 그 
     batch = list(filter(lambda x: x is not None, batch)) #해당 dataloader에서는 손상된 이미지 파일에 대해서 None으로 처리하기 때문에, None인 파일은 batch에서 제외
     return torch.utils.data.dataloader.default_collate(batch)
 
+        
+
 @torch.no_grad()
 def evaluate(model, data_loader, device):
     model.eval()
     tokenizer = KoBertTokenizer.from_pretrained('monologg/kobert') #kobert tokenizer 호출 
 
-    N = M = 4
-    fig, axs = plt.subplots(N,M, figsize=(20,10))
+    
+
 
     with open(args.json_file_name+'.json', 'w', encoding = "utf-8") as make_file: 
 
@@ -36,7 +38,7 @@ def evaluate(model, data_loader, device):
             caps = caps.to(device)
             cap_masks = cap_masks.to(device)
             file_name = file_name
-            
+            fig = plt.figure(figsize=(20,5))
             
             #predict captions
             for i in range(config.max_position_embeddings-1): 
@@ -55,13 +57,13 @@ def evaluate(model, data_loader, device):
             for i in range(len(caps)-1): 
                 result = tokenizer.decode(caps[i].tolist(), skip_special_tokens=True)
                 json_list.append({"file_name":file_name[i], "caption": result.capitalize()})
-                #(channel, height, width) -> (height, width, channel)
-                img_ = np.swapaxes(images[i].cpu().numpy(),0,2)
-                img_ = np.swapaxes(img_, 0, 1)
-                axs[i // N % M, i % N ].imshow(np.uint8(img_))
-                axs[i // N % M, i % N].text(0, 8, result.capitalize(), fontsize=10, bbox = {'facecolor': 'white', 'alpha': 0.7, 'pad': 2}) 
+                ax = fig.add_subplot(4 ,2 , i+1, xticks=[], yticks=[])
+                imgs = images[i].cpu().numpy().transpose(1,2,0)
+                ax.imshow(imgs)
+                ax.set_title(result.capitalize())
             
             plt.show()
+        
 
             
             #list에 저장된 caption을 json 파일에 작성 
